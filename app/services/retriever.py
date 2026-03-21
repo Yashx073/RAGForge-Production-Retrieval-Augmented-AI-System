@@ -7,9 +7,16 @@ class VectorStore:
         self.texts = []
 
     def add(self, embeddings, texts):
-        self.index.add(np.array(embeddings))
+        self.index.add(np.array(embeddings, dtype=np.float32))
         self.texts.extend(texts)
 
     def search(self, query_embedding, k=5):
-        D, I = self.index.search(np.array([query_embedding]), k)
-        return [self.texts[i] for i in I[0]]
+        if self.index.ntotal == 0 or not self.texts:
+            return []
+
+        k = min(k, self.index.ntotal, len(self.texts))
+        if k <= 0:
+            return []
+
+        _, indices = self.index.search(np.array([query_embedding], dtype=np.float32), k)
+        return [self.texts[i] for i in indices[0] if i >= 0 and i < len(self.texts)]

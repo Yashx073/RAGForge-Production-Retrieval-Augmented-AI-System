@@ -22,6 +22,8 @@ vector_store = VectorStore(dim=384)
 def query_rag(query: str):
     query_embedding = embed_texts([query])[0]
     contexts = vector_store.search(query_embedding)
+    if not contexts:
+        return {"answer": "No indexed documents found yet. Add embeddings to the vector store first."}
 
     context_text = "\n".join(contexts)
     answer = generate_answer(query, context_text)
