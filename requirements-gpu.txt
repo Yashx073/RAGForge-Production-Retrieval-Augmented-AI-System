@@ -12,3 +12,4 @@ pydantic==2.12.5
 python-dotenv==1.2.2
 sentence-transformers==5.3.0
 faiss-gpu-cu12==1.14.1.post1
+#wtegert
