@@ -1,0 +1,3 @@
+RAGForge is a Retrieval-Augmented Generation system.
+It ingests documents, creates embeddings, and retrieves context for LLM answers.
+The vector store improves answer relevance.
