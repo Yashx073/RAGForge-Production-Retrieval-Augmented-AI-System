@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "text": "RAGForge is a Retrieval-Augmented Generation system. It ingests documents, creates embeddings, and retrieves context for LLM answers. The vector store improves answer relevance.",
+    "metadata": {
+      "chunk_id": "intro:fixed:0:95c1b7a788de",
+      "doc_id": "intro",
+      "chunk_index": 0,
+      "start_char": 0,
+      "end_char": 177,
+      "strategy": "fixed",
+      "chunk_size": 512,
+      "chunk_overlap": 50,
+      "source": "txt",
+      "file_name": "intro.txt"
+    }
+  },
+  {
+    "id": 2,
+    "text": "# FAQ ## What is RAG? RAG combines retrieval and generation. ## Why use chunking? Chunking splits long documents into smaller pieces for better retrieval. ## What is embedding? An embedding is a numeric vector representation of text.",
+    "metadata": {
+      "chunk_id": "faq:fixed:0:2dd5f4cd67e7",
+      "doc_id": "faq",
+      "chunk_index": 0,
+      "start_char": 0,
+      "end_char": 233,
+      "strategy": "fixed",
+      "chunk_size": 512,
+      "chunk_overlap": 50,
+      "source": "markdown",
+      "file_name": "faq.md"
+    }
+  },
+  {
+    "id": 3,
+    "text": "RAGForge Docs RAGForge Documentation This page explains ingestion, indexing, and querying workflows. Supported formats include TXT, Markdown, HTML, and PDF.",
+    "metadata": {
+      "chunk_id": "page:fixed:0:aaf72aeb31ec",
+      "doc_id": "page",
+      "chunk_index": 0,
+      "start_char": 0,
+      "end_char": 156,
+      "strategy": "fixed",
+      "chunk_size": 512,
+      "chunk_overlap": 50,
+      "source": "html",
+      "file_name": "page.html"
+    }
+  }
+]

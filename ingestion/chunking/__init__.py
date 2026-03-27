@@ -1,25 +1,11 @@
-from __future__ import annotations
-
 import nltk
 
-from .chunking.chunk_config import ChunkConfig, ExperimentChunkConfig, build_chunker
-from .chunking.experiment_chunking import default_experiment_config, run_chunking_experiment
-from .chunking.fixed_chunker import FixedChunker
-from .chunking.recursive_chunker import RecursiveChunker
-
-
-__all__ = [
-    "ChunkConfig",
-    "ExperimentChunkConfig",
-    "FixedChunker",
-    "RecursiveChunker",
-    "build_chunker",
-    "default_experiment_config",
-    "run_chunking_experiment",
-    "fixed_chunk",
-    "recursive_chunk",
-    "sentence_chunk",
-]
+try:
+    from .fixed_chunker import FixedChunker
+    from .recursive_chunker import RecursiveChunker
+except ImportError:
+    from fixed_chunker import FixedChunker
+    from recursive_chunker import RecursiveChunker
 
 
 def _get_text(obj) -> str:
