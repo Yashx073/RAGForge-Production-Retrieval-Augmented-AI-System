@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
+import numpy as np
 
 try:
     import google.generativeai as genai
@@ -36,6 +37,22 @@ EMBED_MODELS = [
     "gemini-embedding-001",
 ]
 
+EXPECTED_EMBEDDING_DIM = 768
+
+
+def _extract_legacy_embeddings(response: Any) -> list[list[float]]:
+    """Normalize legacy google.generativeai embed responses to list[list[float]]."""
+    if isinstance(response, dict):
+        payload = response.get("embedding") or response.get("embeddings")
+        if isinstance(payload, list) and payload and isinstance(payload[0], dict):
+            if "embedding" in payload[0]:
+                return [item["embedding"] for item in payload]
+            if "values" in payload[0]:
+                return [item["values"] for item in payload]
+        if isinstance(payload, list) and payload and isinstance(payload[0], (int, float)):
+            return [payload]
+    raise RuntimeError("Unexpected legacy embedding response format.")
+
 
 def configure_genai() -> None:
     load_dotenv()
@@ -51,6 +68,8 @@ def configure_genai() -> None:
 
 
 def embed_text(text: str) -> list[float]:
+    configure_genai()
+
     if genai is not None:
         last_error: Exception | None = None
         for model_name in EMBED_MODELS:
@@ -77,12 +96,14 @@ def embed_text(text: str) -> list[float]:
 
 
 def embed_batch(text_list: list[str]) -> list[list[float]]:
+    configure_genai()
+
     if genai is not None:
         last_error: Exception | None = None
         for model_name in EMBED_MODELS:
             try:
                 response = genai.embed_content(model=model_name, content=text_list)
-                return response["embedding"]
+                return _extract_legacy_embeddings(response)
             except Exception as exc:  # noqa: BLE001
                 last_error = exc
                 if "not found" not in str(exc).lower():
@@ -100,6 +121,28 @@ def embed_batch(text_list: list[str]) -> list[list[float]]:
             if "not found" not in str(exc).lower():
                 raise
     raise RuntimeError(f"No usable embedding model found. Tried: {EMBED_MODELS}") from last_error
+
+
+def embed_texts(texts: list[str]) -> np.ndarray:
+    """STEP 2 helper: Gemini text-embedding-004 batch -> float32 matrix."""
+    vectors = embed_batch(texts)
+    return np.array(vectors, dtype="float32")
+
+
+def create_embeddings_for_documents(documents: list[dict[str, Any]]) -> np.ndarray:
+    """Create embeddings for chunk-like documents with a `text` field."""
+    texts = [doc["text"] for doc in documents]
+    embeddings = embed_texts(texts)
+
+    if embeddings.ndim != 2:
+        raise RuntimeError(f"Unexpected embedding shape: {embeddings.shape}")
+
+    if embeddings.shape[1] != EXPECTED_EMBEDDING_DIM:
+        raise RuntimeError(
+            f"Unexpected embedding dimension: {embeddings.shape[1]} (expected {EXPECTED_EMBEDDING_DIM})"
+        )
+
+    return embeddings
 
 
 def chunk_documents(
@@ -137,8 +180,8 @@ def embed_chunks(chunks: list[dict[str, Any]]) -> list[dict[str, Any]]:
     if not chunks:
         return []
 
-    texts = [chunk["text"] for chunk in chunks]
-    embeddings = embed_batch(texts)
+    embedding_matrix = create_embeddings_for_documents(chunks)
+    embeddings = embedding_matrix.tolist()
 
     if len(embeddings) != len(chunks):
         raise RuntimeError("Embedding result size mismatch.")
@@ -175,6 +218,10 @@ def main() -> None:
     )
     embedded_chunks = embed_chunks(chunks)
     save_embeddings(embedded_chunks, output_path=args.output)
+
+    # Explicit shape output for STEP 2 verification.
+    shape = (len(embedded_chunks), len(embedded_chunks[0]["embedding"]) if embedded_chunks else 0)
+    print(shape)
 
     print(f"Embedded chunks: {len(embedded_chunks)}")
     print(f"Saved: {args.output}")

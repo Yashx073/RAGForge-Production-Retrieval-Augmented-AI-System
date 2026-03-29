@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "text": "RAGForge is a Retrieval-Augmented Generation system. It ingests documents, creates embeddings, and retrieves context for LLM answers. The vector store improves answer relevance."
+  },
+  {
+    "id": 2,
+    "text": "# FAQ ## What is RAG? RAG combines retrieval and generation. ## Why use chunking? Chunking splits long documents into smaller pieces for better retrieval. ## What is embedding? An embedding is a numeric vector representation of text."
+  },
+  {
+    "id": 3,
+    "text": "RAGForge Docs RAGForge Documentation This page explains ingestion, indexing, and querying workflows. Supported formats include TXT, Markdown, HTML, and PDF."
+  }
+]
