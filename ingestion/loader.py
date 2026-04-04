@@ -1,5 +1,3 @@
-# ingestion/loader.py
-
 import hashlib
 import re
 from pathlib import Path

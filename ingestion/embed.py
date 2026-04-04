@@ -42,6 +42,29 @@ EXPECTED_EMBEDDING_DIM = 768
 
 def _extract_legacy_embeddings(response: Any) -> list[list[float]]:
     """Normalize legacy google.generativeai embed responses to list[list[float]]."""
+    if hasattr(response, "to_dict"):
+        try:
+            response = response.to_dict()
+        except Exception:  # noqa: BLE001
+            pass
+
+    if hasattr(response, "embeddings"):
+        values = []
+        for item in getattr(response, "embeddings"):
+            if hasattr(item, "values"):
+                values.append(list(item.values))
+            elif hasattr(item, "embedding"):
+                values.append(list(item.embedding))
+            elif isinstance(item, dict):
+                payload = item.get("values") or item.get("embedding")
+                if payload is not None:
+                    values.append(list(payload))
+        if values:
+            return values
+
+    if hasattr(response, "embedding"):
+        return [list(getattr(response, "embedding"))]
+
     if isinstance(response, dict):
         payload = response.get("embedding") or response.get("embeddings")
         if isinstance(payload, list) and payload and isinstance(payload[0], dict):
@@ -51,6 +74,21 @@ def _extract_legacy_embeddings(response: Any) -> list[list[float]]:
                 return [item["values"] for item in payload]
         if isinstance(payload, list) and payload and isinstance(payload[0], (int, float)):
             return [payload]
+
+    if isinstance(response, list) and response:
+        if isinstance(response[0], (int, float)):
+            return [response]
+        if hasattr(response[0], "values"):
+            return [list(item.values) for item in response]
+        if isinstance(response[0], dict):
+            values = []
+            for item in response:
+                payload = item.get("values") or item.get("embedding")
+                if payload is not None:
+                    values.append(list(payload))
+            if values:
+                return values
+
     raise RuntimeError("Unexpected legacy embedding response format.")
 
 
@@ -70,6 +108,19 @@ def configure_genai() -> None:
 def embed_text(text: str) -> list[float]:
     configure_genai()
 
+    if google_genai is not None:
+        client = google_genai.Client(api_key=os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY"))
+        last_error = None
+        for model_name in EMBED_MODELS:
+            try:
+                response = client.models.embed_content(model=model_name, contents=[text])
+                return response.embeddings[0].values
+            except Exception as exc:  # noqa: BLE001
+                last_error = exc
+                if "not found" not in str(exc).lower():
+                    raise
+        raise RuntimeError(f"No usable embedding model found. Tried: {EMBED_MODELS}") from last_error
+
     if genai is not None:
         last_error: Exception | None = None
         for model_name in EMBED_MODELS:
@@ -82,21 +133,24 @@ def embed_text(text: str) -> list[float]:
                     raise
         raise RuntimeError(f"No usable embedding model found. Tried: {EMBED_MODELS}") from last_error
 
-    client = google_genai.Client(api_key=os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY"))
-    last_error = None
-    for model_name in EMBED_MODELS:
-        try:
-            response = client.models.embed_content(model=model_name, contents=[text])
-            return response.embeddings[0].values
-        except Exception as exc:  # noqa: BLE001
-            last_error = exc
-            if "not found" not in str(exc).lower():
-                raise
-    raise RuntimeError(f"No usable embedding model found. Tried: {EMBED_MODELS}") from last_error
+    raise RuntimeError("No Gemini SDK client available.")
 
 
 def embed_batch(text_list: list[str]) -> list[list[float]]:
     configure_genai()
+
+    if google_genai is not None:
+        client = google_genai.Client(api_key=os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY"))
+        last_error = None
+        for model_name in EMBED_MODELS:
+            try:
+                response = client.models.embed_content(model=model_name, contents=text_list)
+                return [item.values for item in response.embeddings]
+            except Exception as exc:  # noqa: BLE001
+                last_error = exc
+                if "not found" not in str(exc).lower():
+                    raise
+        raise RuntimeError(f"No usable embedding model found. Tried: {EMBED_MODELS}") from last_error
 
     if genai is not None:
         last_error: Exception | None = None
@@ -110,17 +164,7 @@ def embed_batch(text_list: list[str]) -> list[list[float]]:
                     raise
         raise RuntimeError(f"No usable embedding model found. Tried: {EMBED_MODELS}") from last_error
 
-    client = google_genai.Client(api_key=os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY"))
-    last_error = None
-    for model_name in EMBED_MODELS:
-        try:
-            response = client.models.embed_content(model=model_name, contents=text_list)
-            return [item.values for item in response.embeddings]
-        except Exception as exc:  # noqa: BLE001
-            last_error = exc
-            if "not found" not in str(exc).lower():
-                raise
-    raise RuntimeError(f"No usable embedding model found. Tried: {EMBED_MODELS}") from last_error
+    raise RuntimeError("No Gemini SDK client available.")
 
 
 def embed_texts(texts: list[str]) -> np.ndarray:
