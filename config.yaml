@@ -1,0 +1,7 @@
+# STEP 11: Config file entry for reranker
+
+reranker:
+  enabled: true
+  model: bge-reranker-large
+  top_k: 5
+  rerank_k: 20
