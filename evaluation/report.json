@@ -1,0 +1,35 @@
+{
+  "summary": {
+    "count": 3,
+    "avg_precision@5": 0.13333333333333333,
+    "avg_mrr": 0.27777777777777773,
+    "avg_faithfulness": 1.3333333333333333,
+    "hallucination_rate": 1.0
+  },
+  "results": [
+    {
+      "query": "What is the time complexity of binary search?",
+      "answer": "LLM call failed. Ensure Ollama is running and the model is pulled. Details: timed out",
+      "precision@5": 0.2,
+      "mrr": 0.5,
+      "faithfulness": 1,
+      "hallucination": 1
+    },
+    {
+      "query": "How does gradient descent work?",
+      "answer": "LLM call failed. Ensure Ollama is running and the model is pulled. Details: timed out",
+      "precision@5": 0.2,
+      "mrr": 0.3333333333333333,
+      "faithfulness": 2,
+      "hallucination": 1
+    },
+    {
+      "query": "What is a hash table?",
+      "answer": "A hash table is not mentioned in the provided context. No citation available for this term.",
+      "precision@5": 0.0,
+      "mrr": 0.0,
+      "faithfulness": 1,
+      "hallucination": 1
+    }
+  ]
+}

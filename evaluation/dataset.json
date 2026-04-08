@@ -1,0 +1,17 @@
+[
+  {
+    "question": "What is the time complexity of binary search?",
+    "source_doc": "1",
+    "expected_answer": "O(log n)"
+  },
+  {
+    "question": "How does gradient descent work?",
+    "source_doc": "2",
+    "expected_answer": "An optimization algorithm that minimizes loss"
+  },
+  {
+    "question": "What is a hash table?",
+    "source_doc": "3",
+    "expected_answer": "A data structure that maps keys to values"
+  }
+]

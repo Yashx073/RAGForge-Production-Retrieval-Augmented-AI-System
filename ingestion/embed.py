@@ -11,14 +11,9 @@ from dotenv import load_dotenv
 import numpy as np
 
 try:
-    import google.generativeai as genai
+    from sentence_transformers import SentenceTransformer
 except ImportError:
-    genai = None
-
-try:
-    from google import genai as google_genai
-except ImportError:
-    google_genai = None
+    SentenceTransformer = None
 
 if __package__ in (None, ""):
     # Supports running as: python ingestion/embed.py
@@ -30,145 +25,57 @@ from ingestion.chunking.chunk_config import ChunkConfig, build_chunker
 from ingestion.loader import load_documents
 
 
-EMBED_MODELS = [
-    os.getenv("EMBED_MODEL", "models/text-embedding-004"),
-    "models/embedding-001",
-    "embedding-001",
-    "gemini-embedding-001",
-]
-
-EXPECTED_EMBEDDING_DIM = 768
+# Use all-MiniLM-L6-v2 for fast embeddings or configure via EMBED_MODEL env var
+EMBED_MODEL = os.getenv("EMBED_MODEL", "all-MiniLM-L6-v2")
+EXPECTED_EMBEDDING_DIM = 384  # all-MiniLM-L6-v2 dim
 
 
-def _extract_legacy_embeddings(response: Any) -> list[list[float]]:
-    """Normalize legacy google.generativeai embed responses to list[list[float]]."""
-    if hasattr(response, "to_dict"):
-        try:
-            response = response.to_dict()
-        except Exception:  # noqa: BLE001
-            pass
 
-    if hasattr(response, "embeddings"):
-        values = []
-        for item in getattr(response, "embeddings"):
-            if hasattr(item, "values"):
-                values.append(list(item.values))
-            elif hasattr(item, "embedding"):
-                values.append(list(item.embedding))
-            elif isinstance(item, dict):
-                payload = item.get("values") or item.get("embedding")
-                if payload is not None:
-                    values.append(list(payload))
-        if values:
-            return values
-
-    if hasattr(response, "embedding"):
-        return [list(getattr(response, "embedding"))]
-
-    if isinstance(response, dict):
-        payload = response.get("embedding") or response.get("embeddings")
-        if isinstance(payload, list) and payload and isinstance(payload[0], dict):
-            if "embedding" in payload[0]:
-                return [item["embedding"] for item in payload]
-            if "values" in payload[0]:
-                return [item["values"] for item in payload]
-        if isinstance(payload, list) and payload and isinstance(payload[0], (int, float)):
-            return [payload]
-
-    if isinstance(response, list) and response:
-        if isinstance(response[0], (int, float)):
-            return [response]
-        if hasattr(response[0], "values"):
-            return [list(item.values) for item in response]
-        if isinstance(response[0], dict):
-            values = []
-            for item in response:
-                payload = item.get("values") or item.get("embedding")
-                if payload is not None:
-                    values.append(list(payload))
-            if values:
-                return values
-
-    raise RuntimeError("Unexpected legacy embedding response format.")
-
-
-def configure_genai() -> None:
+def configure_embedder() -> None:
+    """Initialize sentence-transformers embedder."""
     load_dotenv()
-    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-    if not api_key:
-        raise RuntimeError("Missing GEMINI_API_KEY (or GOOGLE_API_KEY) in environment.")
-    if genai is None and google_genai is None:
+    if SentenceTransformer is None:
         raise RuntimeError(
-            "Missing Gemini SDK. Install `google-generativeai` (legacy) or `google-genai` in your active interpreter."
+            "Missing sentence-transformers. Install it with: pip install sentence-transformers"
         )
-    if genai is not None:
-        genai.configure(api_key=api_key)
+
+
+_model_cache = None
+
+
+def get_embedder() -> Any:
+    """Get or initialize the cached embeddings model."""
+    global _model_cache
+    if _model_cache is None:
+        if SentenceTransformer is None:
+            raise RuntimeError("sentence-transformers not installed")
+        _model_cache = SentenceTransformer(EMBED_MODEL)
+    return _model_cache
 
 
 def embed_text(text: str) -> list[float]:
-    configure_genai()
-
-    if google_genai is not None:
-        client = google_genai.Client(api_key=os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY"))
-        last_error = None
-        for model_name in EMBED_MODELS:
-            try:
-                response = client.models.embed_content(model=model_name, contents=[text])
-                return response.embeddings[0].values
-            except Exception as exc:  # noqa: BLE001
-                last_error = exc
-                if "not found" not in str(exc).lower():
-                    raise
-        raise RuntimeError(f"No usable embedding model found. Tried: {EMBED_MODELS}") from last_error
-
-    if genai is not None:
-        last_error: Exception | None = None
-        for model_name in EMBED_MODELS:
-            try:
-                response = genai.embed_content(model=model_name, content=text)
-                return response["embedding"]
-            except Exception as exc:  # noqa: BLE001
-                last_error = exc
-                if "not found" not in str(exc).lower():
-                    raise
-        raise RuntimeError(f"No usable embedding model found. Tried: {EMBED_MODELS}") from last_error
-
-    raise RuntimeError("No Gemini SDK client available.")
+    """Embed a single text string using sentence-transformers."""
+    configure_embedder()
+    model = get_embedder()
+    embedding = model.encode(text, convert_to_numpy=True)
+    return embedding.tolist()
 
 
 def embed_batch(text_list: list[str]) -> list[list[float]]:
-    configure_genai()
+    """Embed a batch of texts using sentence-transformers."""
+    configure_embedder()
+    model = get_embedder()
+    embeddings = model.encode(text_list, convert_to_numpy=True)
+    return embeddings.tolist()
 
-    if google_genai is not None:
-        client = google_genai.Client(api_key=os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY"))
-        last_error = None
-        for model_name in EMBED_MODELS:
-            try:
-                response = client.models.embed_content(model=model_name, contents=text_list)
-                return [item.values for item in response.embeddings]
-            except Exception as exc:  # noqa: BLE001
-                last_error = exc
-                if "not found" not in str(exc).lower():
-                    raise
-        raise RuntimeError(f"No usable embedding model found. Tried: {EMBED_MODELS}") from last_error
 
-    if genai is not None:
-        last_error: Exception | None = None
-        for model_name in EMBED_MODELS:
-            try:
-                response = genai.embed_content(model=model_name, content=text_list)
-                return _extract_legacy_embeddings(response)
-            except Exception as exc:  # noqa: BLE001
-                last_error = exc
-                if "not found" not in str(exc).lower():
-                    raise
-        raise RuntimeError(f"No usable embedding model found. Tried: {EMBED_MODELS}") from last_error
-
-    raise RuntimeError("No Gemini SDK client available.")
+def _extract_legacy_embeddings(response: Any) -> list[list[float]]:
+    """Legacy compatibility helper retained for older call sites."""
+    raise RuntimeError("Legacy embedding responses are no longer supported. Use sentence-transformers instead.")
 
 
 def embed_texts(texts: list[str]) -> np.ndarray:
-    """STEP 2 helper: Gemini text-embedding-004 batch -> float32 matrix."""
+    """Create embeddings using sentence-transformers (all-MiniLM-L6-v2) batch -> float32 matrix."""
     vectors = embed_batch(texts)
     return np.array(vectors, dtype="float32")
 
@@ -243,7 +150,7 @@ def save_embeddings(chunks: list[dict[str, Any]], output_path: str = "data/embed
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Chunk documents and create Gemini embeddings.")
+    parser = argparse.ArgumentParser(description="Chunk documents and create embeddings using sentence-transformers.")
     parser.add_argument("--data-path", default="data/sample")
     parser.add_argument("--output", default="data/embeddings.json")
     parser.add_argument("--strategy", default="fixed", choices=["fixed", "recursive"])
@@ -252,7 +159,7 @@ def main() -> None:
     parser.add_argument("--min-chunk-chars", type=int, default=20)
     args = parser.parse_args()
 
-    configure_genai()
+    configure_embedder()
     chunks = chunk_documents(
         data_path=args.data_path,
         strategy=args.strategy,
