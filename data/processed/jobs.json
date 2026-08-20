@@ -1,0 +1,27 @@
+{
+  "test-job-1": {
+    "status": "completed",
+    "filename": "test.txt",
+    "pages": 1,
+    "chunks": 1,
+    "error": "'dict' object has no attribute 'lower'"
+  },
+  "bb17d20a-7b93-413c-ac1d-2d0744d84320": {
+    "status": "completed",
+    "filename": "bb17d20a-7b93-413c-ac1d-2d0744d84320_test.txt",
+    "pages": 1,
+    "chunks": 1
+  },
+  "41b6c71f-8121-4c5f-a3f2-9f48b490ff82": {
+    "status": "completed",
+    "filename": "41b6c71f-8121-4c5f-a3f2-9f48b490ff82_test.txt",
+    "pages": 1,
+    "chunks": 1
+  },
+  "a720f39a-049c-42d9-8ca1-7f56727ac193": {
+    "status": "completed",
+    "filename": "a720f39a-049c-42d9-8ca1-7f56727ac193_test.txt",
+    "pages": 1,
+    "chunks": 1
+  }
+}

@@ -1,0 +1,13 @@
+# Pricing configuration for cost tracking
+# Update these values based on your model provider pricing
+# For local models (Ollama), costs are 0
+
+llm:
+  input_cost_per_million: 0.0      # qwen2.5-coder:7b local
+  output_cost_per_million: 0.0
+
+embedding:
+  cost_per_million: 0.0            # nomic-embed-text local
+
+reranker:
+  cost_per_million: 0.0            # bge-reranker-large local

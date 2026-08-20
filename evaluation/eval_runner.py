@@ -56,11 +56,11 @@ def main() -> None:
 
         retrieved_docs = retriever.search(question, k=5)
         retrieved_texts = [doc["text"] for doc in retrieved_docs]
-        answer = generate_answer(
+        answer, token_info = generate_answer(
             question,
             retrieved_texts,
             prompt_type="citation",
-            timeout_seconds=10.0,
+            timeout_seconds=60.0,
         )
         context = "\n".join(retrieved_texts)
 
@@ -69,7 +69,7 @@ def main() -> None:
         reciprocal_rank = mrr(retrieved_docs, source_doc)
 
         try:
-            faithfulness = faithfulness_score(question, answer, context)
+            faithfulness = faithfulness_score(question, answer, context, timeout_seconds=60.0)
         except Exception as exc:
             print(f"  Faithfulness call failed: {exc}, using default score 3")
             faithfulness = 3
@@ -84,6 +84,7 @@ def main() -> None:
                 "mrr": reciprocal_rank,
                 "faithfulness": faithfulness,
                 "hallucination": hallucination,
+                "tokens": token_info,
             }
         )
 

@@ -32,8 +32,6 @@ def standardize_document_format(doc: dict[str, Any]) -> dict[str, Any]:
 
 
 def _resolve_device() -> str:
-    if torch is not None and torch.cuda.is_available():
-        return "cuda"
     return "cpu"
 
 

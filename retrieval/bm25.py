@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from nltk.tokenize import wordpunct_tokenize
@@ -51,3 +52,21 @@ class BM25Retriever:
             }
             for i in top_k
         ]
+
+    def save(self, path: str) -> None:
+        data = {
+            "documents": self.documents,
+            "tokenized_docs": self.tokenized_docs,
+        }
+        with open(path, "w") as f:
+            json.dump(data, f)
+
+    @classmethod
+    def load(cls, path: str) -> "BM25Retriever":
+        with open(path, "r") as f:
+            data = json.load(f)
+        retriever = cls.__new__(cls)
+        retriever.documents = data["documents"]
+        retriever.tokenized_docs = data["tokenized_docs"]
+        retriever.bm25 = BM25Okapi(retriever.tokenized_docs)
+        return retriever

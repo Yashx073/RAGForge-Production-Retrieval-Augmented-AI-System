@@ -13,5 +13,90 @@
     "question": "What is a hash table?",
     "source_doc": "3",
     "expected_answer": "A data structure that maps keys to values"
+  },
+  {
+    "question": "What is RAGForge?",
+    "source_doc": "1",
+    "expected_answer": "A Retrieval-Augmented Generation system"
+  },
+  {
+    "question": "What embedding model does RAGForge use?",
+    "source_doc": "1",
+    "expected_answer": "sentence-transformers/all-MiniLM-L6-v2 or nomic-embed-text"
+  },
+  {
+    "question": "What is the chunk size used in RAGForge?",
+    "source_doc": "1",
+    "expected_answer": "512 tokens"
+  },
+  {
+    "question": "What is the chunk overlap in RAGForge?",
+    "source_doc": "1",
+    "expected_answer": "50 tokens"
+  },
+  {
+    "question": "What retrieval methods does RAGForge use?",
+    "source_doc": "1",
+    "expected_answer": "FAISS dense retrieval and BM25 sparse retrieval"
+  },
+  {
+    "question": "What reranker does RAGForge use?",
+    "source_doc": "1",
+    "expected_answer": "BAAI/bge-reranker-large"
+  },
+  {
+    "question": "What LLM does RAGForge use for generation?",
+    "source_doc": "1",
+    "expected_answer": "Ollama qwen2.5-coder:7b"
+  },
+  {
+    "question": "What is the hybrid retrieval weight for dense?",
+    "source_doc": "1",
+    "expected_answer": "0.6"
+  },
+  {
+    "question": "What is the hybrid retrieval weight for BM25?",
+    "source_doc": "1",
+    "expected_answer": "0.4"
+  },
+  {
+    "question": "What is the reranker top_k setting?",
+    "source_doc": "1",
+    "expected_answer": "5"
+  },
+  {
+    "question": "What is the reranker rerank_k setting?",
+    "source_doc": "1",
+    "expected_answer": "20"
+  },
+  {
+    "question": "What document formats does RAGForge support?",
+    "source_doc": "1",
+    "expected_answer": "txt, md, html, pdf"
+  },
+  {
+    "question": "What chunking strategies are available?",
+    "source_doc": "1",
+    "expected_answer": "fixed and recursive"
+  },
+  {
+    "question": "What evaluation metrics does RAGForge use?",
+    "source_doc": "1",
+    "expected_answer": "Precision@k, MRR, faithfulness, hallucination rate"
+  },
+  {
+    "question": "What is the purpose of the reranker?",
+    "source_doc": "1",
+    "expected_answer": "Re-rank top candidates from hybrid retrieval for better relevance"
+  },
+  {
+    "question": "What is the FAISS index type used?",
+    "source_doc": "1",
+    "expected_answer": "IndexFlatIP (inner product)"
+  },
+  {
+    "question": "What is the embedding dimension for all-MiniLM-L6-v2?",
+    "source_doc": "1",
+    "expected_answer": "384"
   }
 ]

@@ -1,0 +1,148 @@
+{
+  "summary": {
+    "count": 3,
+    "latency": {
+      "total": {
+        "p50": 21508.640389009088,
+        "p95": 27965.531781002937,
+        "p99": 27965.531781002937,
+        "avg": 22992.569838002964,
+        "min": 19503.537343996868,
+        "max": 27965.531781002937
+      },
+      "embedding": {
+        "p50": 2502.30194300093,
+        "p95": 2943.2641329985927,
+        "p99": 2943.2641329985927,
+        "avg": 1833.3960076658211,
+        "min": 54.62194699794054,
+        "max": 2943.2641329985927
+      },
+      "retrieval": {
+        "p50": 2502.5269750040025,
+        "p95": 2948.8645249948604,
+        "p99": 2948.8645249948604,
+        "avg": 1835.7408536661144,
+        "min": 55.83106099948054,
+        "max": 2948.8645249948604
+      },
+      "reranking": {
+        "p50": 7192.953306002892,
+        "p95": 8173.18494200299,
+        "p99": 8173.18494200299,
+        "avg": 7338.4237466695295,
+        "min": 6649.132992002706,
+        "max": 8173.18494200299
+      },
+      "generation": {
+        "p50": 11813.160108002194,
+        "p95": 18367.53426400537,
+        "p99": 18367.53426400537,
+        "avg": 13818.40523766732,
+        "min": 11274.521340994397,
+        "max": 18367.53426400537
+      }
+    },
+    "tokens": {
+      "avg_input": 181.0,
+      "avg_output": 71.0,
+      "total_input": 543,
+      "total_output": 213
+    }
+  },
+  "records": [
+    {
+      "query": "What is the time complexity of binary search?",
+      "answer": "The time complexity of binary search is O(log n), where n is the number of elements in the sorted list. This is because binary search divides the list into halves with each iteration, significantly reducing the search space [3].",
+      "latency": {
+        "embedding_ms": 54.62194699794054,
+        "faiss_search_ms": 0.9721380047267303,
+        "bm25_search_ms": 0.20987699826946482,
+        "fusion_ms": 0.027098998543806374,
+        "retrieval_ms": 55.83106099948054,
+        "reranking_ms": 8173.18494200299,
+        "generation_ms": 11274.521340994397,
+        "total_ms": 19503.537343996868
+      },
+      "tokens": {
+        "input": 183,
+        "output": 46,
+        "total": 229
+      },
+      "cost": {
+        "llm_input_cost": 0.0,
+        "llm_output_cost": 0.0,
+        "embedding_cost": 0.0,
+        "reranker_cost": 0.0,
+        "total_cost": 0.0
+      },
+      "retrieved_chunks": 3,
+      "precision@5": 0.2,
+      "mrr": 0.5,
+      "faithfulness": 1,
+      "hallucination": 1
+    },
+    {
+      "query": "How does gradient descent work?",
+      "answer": "I'm sorry, but the provided context does not contain any information about how gradient descent works. Gradient descent is an optimization algorithm used in machine learning and deep learning to minimize some function by iteratively moving in the direction of steepest descent as defined by the negative of the gradient. The context focuses on RAGForge, a Retrieval-Augmented Generation system, and does not address optimization algorithms like gradient descent. For information on how gradient descent works, you may want to consult a different resource that covers topics in machine learning or optimization theory.",
+      "latency": {
+        "embedding_ms": 2943.2641329985927,
+        "faiss_search_ms": 5.391282997152302,
+        "bm25_search_ms": 0.18745700072031468,
+        "fusion_ms": 0.021651998395100236,
+        "retrieval_ms": 2948.8645249948604,
+        "reranking_ms": 6649.132992002706,
+        "generation_ms": 18367.53426400537,
+        "total_ms": 27965.531781002937
+      },
+      "tokens": {
+        "input": 180,
+        "output": 110,
+        "total": 290
+      },
+      "cost": {
+        "llm_input_cost": 0.0,
+        "llm_output_cost": 0.0,
+        "embedding_cost": 0.0,
+        "reranker_cost": 0.0,
+        "total_cost": 0.0
+      },
+      "retrieved_chunks": 3,
+      "precision@5": 0.2,
+      "mrr": 0.5,
+      "faithfulness": 1,
+      "hallucination": 1
+    },
+    {
+      "query": "What is a hash table?",
+      "answer": "A hash table [4] is a data structure that implements an associative array abstract data type, a structure that can map keys to values. A hash table uses a hash function to compute an index into an array of buckets or slots, from which the desired value can be found.",
+      "latency": {
+        "embedding_ms": 2502.30194300093,
+        "faiss_search_ms": 0.04106800042791292,
+        "bm25_search_ms": 0.16699299885658547,
+        "fusion_ms": 0.016971003788057715,
+        "retrieval_ms": 2502.5269750040025,
+        "reranking_ms": 7192.953306002892,
+        "generation_ms": 11813.160108002194,
+        "total_ms": 21508.640389009088
+      },
+      "tokens": {
+        "input": 180,
+        "output": 57,
+        "total": 237
+      },
+      "cost": {
+        "llm_input_cost": 0.0,
+        "llm_output_cost": 0.0,
+        "embedding_cost": 0.0,
+        "reranker_cost": 0.0,
+        "total_cost": 0.0
+      },
+      "retrieved_chunks": 3,
+      "precision@5": 0.0,
+      "mrr": 0.0,
+      "faithfulness": 1,
+      "hallucination": 1
+    }
+  ]
+}

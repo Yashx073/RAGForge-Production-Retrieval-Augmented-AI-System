@@ -77,9 +77,9 @@ Return only the number.
 """
     
     try:
-        client = ollama.Client(timeout=timeout_seconds)
+        client = ollama.Client(host="http://127.0.0.1:11434", timeout=timeout_seconds)
         response = client.generate(
-            model="qwen2.5-coder:14b",
+            model="qwen2.5-coder:7b",
             prompt=faithfulness_prompt,
             stream=False,
         )

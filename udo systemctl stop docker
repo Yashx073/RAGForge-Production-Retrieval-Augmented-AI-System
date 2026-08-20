@@ -1,0 +1,23 @@
+○ docker.service - Docker Application Container Engine
+     Loaded: loaded (]8;;file://Yashx073/usr/lib/systemd/system/docker.service\/usr/lib/systemd/system/docker.service]8;;\; [0;1;38:5:185mdisabled[0m; preset: [0;1;38:5:185mdisabled[0m)
+    Drop-In: /usr/lib/systemd/system/service.d
+             └─]8;;file://Yashx073/usr/lib/systemd/system/service.d/10-timeout-abort.conf\10-timeout-abort.conf]8;;\
+     Active: inactive (dead) since Fri 2026-07-10 23:31:39 IST; 23s ago
+   Duration: 33min 14.578s
+ Invocation: 8f387bc743ee457dbad0494b30906ed2
+TriggeredBy: [0;1;32m●[0m docker.socket
+       Docs: ]8;;https://docs.docker.com\https://docs.docker.com]8;;\
+   Main PID: 1477 (code=exited, status=0/SUCCESS)
+   Mem peak: 145.1M
+        CPU: 1.100s
+
+Jul 10 22:58:25 Yashx073 dockerd[1477]: time="2026-07-10T22:58:25.138130080+05:30" level=info msg="API listen on /run/docker.sock"
+Jul 10 22:58:25 Yashx073 systemd[1]: Started docker.service - Docker Application Container Engine.
+Jul 10 23:31:39 Yashx073 systemd[1]: Stopping docker.service - Docker Application Container Engine...
+Jul 10 23:31:39 Yashx073 dockerd[1477]: time="2026-07-10T23:31:39.718791214+05:30" level=info msg="Processing signal 'terminated'"
+Jul 10 23:31:39 Yashx073 dockerd[1477]: time="2026-07-10T23:31:39.723384685+05:30" level=info msg="stopping event stream following graceful shutdown" error="<nil>" module=libcontainerd namespace=moby
+Jul 10 23:31:39 Yashx073 dockerd[1477]: time="2026-07-10T23:31:39.724469339+05:30" level=info msg="stopping event stream following graceful shutdown" error="context canceled" module=libcontainerd namespace=plugins.moby
+Jul 10 23:31:39 Yashx073 dockerd[1477]: time="2026-07-10T23:31:39.724589538+05:30" level=info msg="Daemon shutdown complete"
+Jul 10 23:31:39 Yashx073 systemd[1]: docker.service: Deactivated successfully.
+Jul 10 23:31:39 Yashx073 systemd[1]: Stopped docker.service - Docker Application Container Engine.
+Jul 10 23:31:39 Yashx073 systemd[1]: docker.service: Consumed 1.100s CPU time over 33min 18.005s wall clock time, 145.1M memory peak.
