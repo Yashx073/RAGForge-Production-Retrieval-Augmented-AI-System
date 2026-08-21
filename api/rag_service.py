@@ -90,6 +90,7 @@ class RAGService:
             query=query,
             retrieved_chunks=contexts,
             prompt_type="citation",
+            timeout_seconds=120.0,
         )
         latencies["generation_ms"] = (time.perf_counter() - start) * 1000
 
