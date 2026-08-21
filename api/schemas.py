@@ -1,28 +1,20 @@
-from pydantic import BaseModel
-from typing import Optional, List
-from datetime import datetime
+from pydantic import BaseModel, Field
+from typing import Optional
 
+class QueryRequest(BaseModel):
+    query: str = Field(..., min_length=1)
+    top_k: int = Field(default=5, ge=1, le=20)
 
-class UploadResponse(BaseModel):
-    job_id: str
-    status: str
-    filename: str
+class Source(BaseModel):
+    document_id: str
+    chunk_id: str
+    text: str
+    score: Optional[float] = None
 
-
-class JobStatus(BaseModel):
-    job_id: str
-    status: str
-    filename: str
-    pages: Optional[int] = None
-    chunks: Optional[int] = None
-    error: Optional[str] = None
-    created_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-
-
-class JobListResponse(BaseModel):
-    jobs: List[JobStatus]
-
+class QueryResponse(BaseModel):
+    answer: str
+    sources: list[Source]
+    latency_ms: float
 
 class HealthResponse(BaseModel):
     status: str

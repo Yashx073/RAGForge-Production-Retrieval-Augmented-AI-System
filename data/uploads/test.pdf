@@ -1,0 +1,1 @@
+This is a test document for RAGForge. It contains multiple sentences to test chunking and embedding. The async ingestion pipeline should process this document in the background.

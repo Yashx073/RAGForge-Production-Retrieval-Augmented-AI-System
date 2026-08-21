@@ -41,7 +41,14 @@ class DenseRetriever:
         for rank, doc_index in enumerate(indices[0]):
             if doc_index < 0:
                 continue
-            item = dict(self.metadata[doc_index])
+            # Handle both int and string keys
+            key = int(doc_index)
+            if key not in self.metadata:
+                key = str(key)
+            if key not in self.metadata:
+                continue
+            item = dict(self.metadata[key])
+            item["id"] = key
             item["score"] = float(scores[0][rank])
             results.append(item)
 

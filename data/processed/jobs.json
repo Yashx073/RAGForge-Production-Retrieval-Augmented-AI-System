@@ -23,5 +23,34 @@
     "filename": "a720f39a-049c-42d9-8ca1-7f56727ac193_test.txt",
     "pages": 1,
     "chunks": 1
+  },
+  "4bb5b447-64c8-4e79-aa71-596f05b0bb4f": {
+    "status": "completed",
+    "filename": "4bb5b447-64c8-4e79-aa71-596f05b0bb4f_test.txt",
+    "pages": 1,
+    "chunks": 1
+  },
+  "08bbe101-74e9-4bb3-9a6b-82e3adcd8980": {
+    "status": "completed",
+    "filename": "08bbe101-74e9-4bb3-9a6b-82e3adcd8980_test.txt",
+    "pages": 1,
+    "chunks": 1
+  },
+  "f5282fc7-6aa3-4692-88af-5e97157cf142": {
+    "status": "completed",
+    "filename": "f5282fc7-6aa3-4692-88af-5e97157cf142_test.txt",
+    "pages": 1,
+    "chunks": 1
+  },
+  "c24d7025-2c7c-4481-80f8-7d5b768b0413": {
+    "status": "completed",
+    "filename": "c24d7025-2c7c-4481-80f8-7d5b768b0413_intro.txt",
+    "pages": 1,
+    "chunks": 1
+  },
+  "9de71a86-d204-476d-bbcf-e682c0a3a72f": {
+    "status": "failed",
+    "filename": "9de71a86-d204-476d-bbcf-e682c0a3a72f_page.html",
+    "error": "Unsupported file type: .html"
   }
 }

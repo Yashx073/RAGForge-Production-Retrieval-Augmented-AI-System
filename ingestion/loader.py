@@ -1,5 +1,6 @@
 from pathlib import Path
 from pypdf import PdfReader
+from typing import Any
 
 
 def load_pdf(file_path: str):
@@ -31,3 +32,26 @@ def load_document(file_path: str):
         return load_txt(file_path)
     else:
         raise ValueError(f"Unsupported file type: {extension}")
+
+
+def load_documents(data_path: str) -> list[dict[str, Any]]:
+    """Load all supported documents from a directory."""
+    path = Path(data_path)
+    documents = []
+    
+    for file_path in path.rglob("*"):
+        if file_path.is_file() and file_path.suffix.lower() in [".pdf", ".txt", ".md", ".html"]:
+            try:
+                pages = load_document(str(file_path))
+                for page in pages:
+                    documents.append({
+                        "text": page["text"],
+                        "metadata": {
+                            "source": str(file_path),
+                            "page": page["page"]
+                        }
+                    })
+            except Exception as e:
+                print(f"Error loading {file_path}: {e}")
+    
+    return documents
