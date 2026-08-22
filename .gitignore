@@ -35,6 +35,8 @@ htmlcov/
 .ipynb_checkpoints/
 
 # Logs and runtime artifacts
+logs/
+server.log
 *.log
 *.pid
 
