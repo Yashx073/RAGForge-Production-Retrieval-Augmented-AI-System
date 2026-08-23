@@ -24,12 +24,23 @@ def load_txt(file_path: str):
     }]
 
 
+def load_html(file_path: str):
+    import re
+    html = Path(file_path).read_text(encoding="utf-8")
+    text = re.sub(r"<script.*?</script>|<style.*?</style>", " ", html, flags=re.S | re.I)
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    return [{"page": None, "text": text}]
+
+
 def load_document(file_path: str):
     extension = Path(file_path).suffix.lower()
     if extension == ".pdf":
         return load_pdf(file_path)
-    elif extension == ".txt":
+    elif extension in (".txt", ".md"):
         return load_txt(file_path)
+    elif extension == ".html":
+        return load_html(file_path)
     else:
         raise ValueError(f"Unsupported file type: {extension}")
 
@@ -38,7 +49,7 @@ def load_documents(data_path: str) -> list[dict[str, Any]]:
     """Load all supported documents from a directory."""
     path = Path(data_path)
     documents = []
-    
+
     for file_path in path.rglob("*"):
         if file_path.is_file() and file_path.suffix.lower() in [".pdf", ".txt", ".md", ".html"]:
             try:

@@ -1,1 +1,0 @@
-RAGForge is a Retrieval-Augmented Generation system that ingests documents, creates embeddings, and retrieves context to enhance LLM answers. It uses FAISS for dense retrieval and BM25 for sparse retrieval.

@@ -48,6 +48,12 @@ class RAGService:
         self._initialized = True
         print("RAG service initialized")
 
+    def rebuild(self) -> None:
+        """Force a full index rebuild (e.g. after documents change)."""
+        self._initialized = False
+        self.retriever = None
+        self.initialize()
+
     def query(
         self,
         query: str,

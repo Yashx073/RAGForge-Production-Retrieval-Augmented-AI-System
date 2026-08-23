@@ -1,0 +1,18 @@
++--------------------------------------+---------------------------------+---------------------------------------------+--------------------------------------------------------------+
+| Topic                                | Input                           | Output                                      | Example                                                      |
++--------------------------------------+---------------------------------+---------------------------------------------+--------------------------------------------------------------+
+| Topic 1                              | RGB Image + Thermal Image       | Multi-Task Scene Understanding              | Detect cars, people, roads, lanes, and drivable areas under  |
+| Context-Aware Adaptive RGB-Thermal   |                                 | (Object Detection + Semantic Segmentation)  | varying weather and lighting conditions.                     |
+| Fusion for Multi-Task Scene          |                                 |                                             |                                                              |
+| Understanding                        |                                 |                                             |                                                              |
++--------------------------------------+---------------------------------+---------------------------------------------+--------------------------------------------------------------+
+| Topic 2                              | RGB Image + Thermal Image +     | Open-Vocabulary Object Detection            | "Find forklifts", "Find damaged transformer",               |
+| Open-Vocabulary RGB-Thermal Object   | Text Prompt                     | (Detect any object described using text)    | "Locate construction workers wearing helmets",              |
+| Detection using Vision-Language      |                                 |                                             | "Find fire extinguishers".                                  |
+| Models                               |                                 |                                             |                                                              |
++--------------------------------------+---------------------------------+---------------------------------------------+--------------------------------------------------------------+
+| Topic 3                              | RGB-Thermal Video               | Multi-Object Tracking                       | Track Person 12 across 500 video frames while maintaining    |
+| Adaptive RGB-Thermal Multi-Object    |                                 | (Maintain a unique identity for every       | the same identity even under occlusion, nighttime, or fog.   |
+| Tracking with Dynamic Identity       |                                 | object throughout the video)                |                                                              |
+| Preservation                         |                                 |                                             |                                                              |
++--------------------------------------+---------------------------------+---------------------------------------------+--------------------------------------------------------------+
