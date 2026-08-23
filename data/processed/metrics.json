@@ -1,0 +1,32 @@
+[
+  {
+    "timestamp": "2026-08-23T20:12:35",
+    "query": "What retrieval methods are used?",
+    "latency_ms": 23248.326324996015,
+    "retrieval_ms": 9900.51714299625,
+    "generation_ms": 13347.809181999764,
+    "input_tokens": 376,
+    "output_tokens": 16,
+    "total_tokens": 392,
+    "num_sources": 5,
+    "cost_llm": 6.6e-05,
+    "cost_embedding": 0.0,
+    "cost_rerank": 0.0008,
+    "cost_total": 0.000866
+  },
+  {
+    "timestamp": "2026-08-23T20:13:18",
+    "query": "explain topics",
+    "latency_ms": 31860.57943400374,
+    "retrieval_ms": 5461.48116599943,
+    "generation_ms": 26399.09826800431,
+    "input_tokens": 389,
+    "output_tokens": 215,
+    "total_tokens": 604,
+    "num_sources": 5,
+    "cost_llm": 0.000187,
+    "cost_embedding": 0.0,
+    "cost_rerank": 0.0008,
+    "cost_total": 0.000987
+  }
+]

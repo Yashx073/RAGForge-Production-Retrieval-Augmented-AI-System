@@ -13,6 +13,7 @@ from api.schemas import (
     UploadResponse,
 )
 from api.rag_service import rag_service
+from api import metrics_store
 
 DATA_DIR = Path("data")
 UPLOAD_DIR = DATA_DIR / "uploads"
@@ -109,7 +110,7 @@ async def delete_document(document_id: str):
 async def query(request: QueryRequest):
     start = time.perf_counter()
     try:
-        answer, sources, stage_latencies = rag_service.query(
+        answer, sources, stage_latencies, token_counts = rag_service.query(
             query=request.query,
             top_k=request.top_k,
         )
@@ -117,6 +118,14 @@ async def query(request: QueryRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
     total_latency = (time.perf_counter() - start) * 1000
+    stage_latencies.setdefault("total_ms", total_latency)
+
+    metrics_store.record_query(
+        query=request.query,
+        latencies=stage_latencies,
+        tokens=token_counts,
+        num_sources=len(sources),
+    )
 
     # Convert sources to schema
     source_objects = [
@@ -134,3 +143,60 @@ async def query(request: QueryRequest):
         sources=source_objects,
         latency_ms=total_latency,
     )
+
+
+EVAL_SET = [
+    {"query": "What is RAGForge?", "ground_truth": "intro.txt"},
+    {"query": "How do I install RAGForge?", "ground_truth": "faq.md"},
+    {"query": "What is the architecture of RAGForge?", "ground_truth": "intro.txt"},
+]
+
+
+@app.get("/evaluation/summary")
+async def evaluation_summary():
+    """Run retrieval-only evaluation (precision@5, MRR) against a built-in QA set."""
+    if not rag_service._initialized:
+        rag_service.initialize()
+    if rag_service.retriever is None:
+        raise HTTPException(status_code=503, detail="Index not built yet")
+
+    from evaluation.metrics import precision_at_k, mrr
+
+    p_scores, mrr_scores = [], []
+    for item in EVAL_SET:
+        results = rag_service.retriever.search(item["query"], k=5)
+        docs = [
+            {
+                "id": r.get("metadata", {}).get("source", ""),
+                "text": r.get("text", ""),
+            }
+            for r in results
+        ]
+        gt = next(
+            (d["id"] for d in docs if d["id"].endswith(item["ground_truth"])),
+            None,
+        )
+        if gt is None:
+            p_scores.append(0.0)
+            mrr_scores.append(0.0)
+            continue
+        p_scores.append(precision_at_k(docs, gt, k=5))
+        mrr_scores.append(mrr(docs, gt))
+
+    n = len(EVAL_SET)
+    return {
+        "precision_at_5": sum(p_scores) / n,
+        "recall_at_5": sum(1 for p in p_scores if p > 0) / n,
+        "mrr": sum(mrr_scores) / n,
+        "total_evaluations": n,
+    }
+
+
+@app.get("/metrics/performance")
+async def metrics_performance():
+    return metrics_store.performance_summary()
+
+
+@app.get("/metrics/cost")
+async def metrics_cost():
+    return metrics_store.cost_summary()

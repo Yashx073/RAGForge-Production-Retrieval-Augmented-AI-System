@@ -58,14 +58,15 @@ class RAGService:
         self,
         query: str,
         top_k: int = 5,
-    ) -> tuple[str, list[dict[str, Any]], dict[str, float]]:
+    ) -> tuple[str, list[dict[str, Any]], dict[str, float], dict[str, int]]:
         """
         Execute the full RAG pipeline.
-        
+
         Returns:
             answer: The generated answer
             sources: List of source documents with metadata
             latencies: Dict with timing for each stage
+            tokens: Dict with token usage from the LLM
         """
         if not self._initialized:
             self.initialize()
@@ -112,7 +113,7 @@ class RAGService:
                 "score": result.get("rerank_score", result.get("score", 0.0)),
             })
 
-        return answer, sources, latencies
+        return answer, sources, latencies, token_counts
 
 
 # Global instance

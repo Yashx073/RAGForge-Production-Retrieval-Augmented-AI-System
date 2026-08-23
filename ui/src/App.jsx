@@ -67,6 +67,12 @@ function App() {
   const [uploadStatus, setUploadStatus] = useState('')
   const [docSearch, setDocSearch] = useState('')
 
+  const [evalData, setEvalData] = useState(null)
+  const [evalLoading, setEvalLoading] = useState(false)
+  const [evalError, setEvalError] = useState('')
+  const [perfData, setPerfData] = useState(null)
+  const [costData, setCostData] = useState(null)
+
   const filteredDocuments = documents.filter((d) =>
     d.name.toLowerCase().includes(docSearch.toLowerCase())
   )
@@ -86,6 +92,21 @@ function App() {
 
   useEffect(() => {
     if (currentPage === 'documents') loadDocuments()
+    if (currentPage === 'evaluation') {
+      setEvalLoading(true)
+      setEvalError('')
+      fetch(`${API_BASE}/evaluation/summary`)
+        .then((r) => (r.ok ? r.json() : r.json().then((d) => { throw new Error(d.detail || 'Failed') })))
+        .then(setEvalData)
+        .catch((e) => setEvalError(e.message))
+        .finally(() => setEvalLoading(false))
+    }
+    if (currentPage === 'performance') {
+      fetch(`${API_BASE}/metrics/performance`).then((r) => r.json()).then(setPerfData).catch(() => {})
+    }
+    if (currentPage === 'cost') {
+      fetch(`${API_BASE}/metrics/cost`).then((r) => r.json()).then(setCostData).catch(() => {})
+    }
   }, [currentPage])
 
   const handleUpload = async (e) => {
@@ -376,37 +397,71 @@ function App() {
         {currentPage === 'evaluation' && (
           <div className="max-w-3xl mx-auto">
             <div className="bg-white rounded-lg p-6 shadow shadow-gray-200">
-              <h2 className="text-2xl font-bold mb-6">Evaluation Dashboard</h2>
-
-              <div className="grid grid-cols-2 gap-6 mb-8">
-                <div className="p-6 rounded-lg bg-gray-50">
-                  <p className="text-3xl font-bold text-blue-600">87.4%</p>
-                  <p className="text-sm text-gray-500 mt-2">Precision@5</p>
-                </div>
-                <div className="p-6 rounded-lg bg-gray-50">
-                  <p className="text-3xl font-bold text-green-600">91.2%</p>
-                  <p className="text-sm text-gray-500 mt-2">Faithfulness</p>
-                </div>
-                <div className="p-6 rounded-lg bg-gray-50">
-                  <p className="text-3xl font-bold text-purple-600">0.84</p>
-                  <p className="text-sm text-gray-500 mt-2">MRR</p>
-                </div>
-                <div className="p-6 rounded-lg bg-gray-50">
-                  <p className="text-3xl font-bold text-red-600">4.8%</p>
-                  <p className="text-sm text-gray-500 mt-2">Hallucination Rate</p>
-                </div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold">Evaluation Dashboard</h2>
+                <button
+                  onClick={() => setCurrentPage('evaluation')}
+                  className="text-sm text-gray-400 hover:text-blue-600"
+                >
+                  Refresh
+                </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
-                <div className="p-4 rounded-lg bg-gray-100 h-64">
-                  <p className="text-gray-400 text-center">Evaluation Over Time</p>
-                  <div className="h-32 bg-gray-200 rounded-lg"></div>
-                </div>
-                <div className="p-4 rounded-lg bg-gray-100 h-64">
-                  <p className="text-gray-400 text-center">Metrics Trend</p>
-                  <div className="h-32 bg-gray-200 rounded-lg"></div>
-                </div>
-              </div>
+              {evalLoading && <p className="text-gray-400 text-sm">Running retrieval evaluation...</p>}
+              {evalError && (
+                <p className="text-red-500 text-sm mb-4">Error: {evalError}</p>
+              )}
+
+              {evalData && (
+                <>
+                  <div className="grid grid-cols-2 gap-6 mb-8">
+                    <div className="p-6 rounded-lg bg-gray-50">
+                      <p className="text-3xl font-bold text-blue-600">
+                        {((evalData.precision_at_5 ?? 0) * 100).toFixed(1)}%
+                      </p>
+                      <p className="text-sm text-gray-500 mt-2">Precision@5</p>
+                    </div>
+                    <div className="p-6 rounded-lg bg-gray-50">
+                      <p className="text-3xl font-bold text-green-600">
+                        {((evalData.recall_at_5 ?? 0) * 100).toFixed(1)}%
+                      </p>
+                      <p className="text-sm text-gray-500 mt-2">Hit Rate@5</p>
+                    </div>
+                    <div className="p-6 rounded-lg bg-gray-50">
+                      <p className="text-3xl font-bold text-purple-600">
+                        {(evalData.mrr ?? 0).toFixed(3)}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-2">MRR</p>
+                    </div>
+                    <div className="p-6 rounded-lg bg-gray-50">
+                      <p className="text-3xl font-bold text-gray-700">{evalData.total_evaluations}</p>
+                      <p className="text-sm text-gray-500 mt-2">Eval Queries</p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg bg-gray-900 text-gray-300 p-4 text-xs font-mono space-y-1">
+                    {[
+                      ['Precision@5', evalData.precision_at_5],
+                      ['Hit Rate@5', evalData.recall_at_5],
+                      ['MRR', evalData.mrr],
+                    ].map(([label, val]) => (
+                      <div key={label} className="flex items-center gap-3">
+                        <span className="w-24 shrink-0">{label}</span>
+                        <div className="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-blue-500 rounded-full transition-all duration-700"
+                            style={{ width: `${(val ?? 0) * 100}%` }}
+                          />
+                        </div>
+                        <span className="w-14 text-right">{((val ?? 0) * 100).toFixed(1)}%</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-3">
+                    Retrieval-only evaluation against a built-in QA set. Faithfulness / hallucination scoring (LLM-judged) coming next.
+                  </p>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -417,48 +472,70 @@ function App() {
             <div className="bg-white rounded-lg p-6 shadow shadow-gray-200">
               <h2 className="text-2xl font-bold mb-6">Performance</h2>
 
-              <div className="grid grid-cols-2 gap-6 mb-8">
-                <div>
-                  <p className="text-xl font-bold">1,284</p>
-                  <p className="text-sm text-gray-500">Requests</p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-blue-600">1.72s</p>
-                  <p className="text-sm text-gray-500">P95 Latency</p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <p className="font-medium mb-2">Pipeline Latency Breakdown</p>
-                <div className="bg-gray-100 rounded-lg h-48 relative">
-                  <div
-                    className="absolute left-0 top-0 bottom-1/2 bg-blue-500 w-1/4 h-1/2"
-                    style={{ transition: 'width 1s, height 1s' }}
-                  />
-                  <div
-                    className="absolute left-0 bottom-1/2 right-1/4 bg-yellow-500 w-1/4 h-1/2"
-                    style={{ transition: 'width 1s, height 1s' }}
-                  />
-                  <div
-                    className="absolute right-0 bottom-1/2 bg-orange-500 w-1/4 h-1/2"
-                    style={{ transition: 'width 1s, height 1s' }}
-                  />
-                  <div
-                    className="absolute right-0 top-0 bg-red-500 w-1/4 h-1/2"
-                    style={{ transition: 'width 1s, height 1s' }}
-                  />
-                </div>
-
-                <p className="text-sm text-gray-500 mt-4">
-                  Query embedding ███████ 120ms · FAISS retrieval ██ 48ms · BM25 retrieval ██ 32ms · Reranking ██████ 210ms · Prompt construction █ 12ms · Ollama generation ███████████████ 1.1s
+              {!perfData || perfData.total_requests === 0 ? (
+                <p className="text-gray-400 text-sm py-8 text-center">
+                  No queries recorded yet. Ask something in Chat, then come back.
                 </p>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-6 mb-8">
+                    <div className="p-6 rounded-lg bg-gray-50">
+                      <p className="text-3xl font-bold">{perfData.total_requests.toLocaleString()}</p>
+                      <p className="text-sm text-gray-500 mt-2">Requests</p>
+                    </div>
+                    <div className="p-6 rounded-lg bg-gray-50">
+                      <p className="text-3xl font-bold text-blue-600">
+                        {(perfData.percentiles.p95 / 1000).toFixed(2)}s
+                      </p>
+                      <p className="text-sm text-gray-500 mt-2">P95 Latency</p>
+                    </div>
+                  </div>
 
-                <div>
-                  <p className="font-medium">P50: 0.9s</p>
-                  <p className="font-medium text-blue-600">P95: 1.72s</p>
-                  <p className="font-medium">P99: 2.4s</p>
-                </div>
-              </div>
+                  <p className="font-medium mb-3">Avg Pipeline Latency Breakdown</p>
+                  <div className="space-y-3 mb-8">
+                    {(() => {
+                      const total = perfData.avg_latency_ms || 1
+                      const stages = [
+                        { name: 'Retrieval (hybrid + rerank)', ms: perfData.avg_retrieval_ms, color: 'bg-blue-500' },
+                        { name: 'LLM generation', ms: perfData.avg_generation_ms, color: 'bg-orange-500' },
+                      ]
+                      return stages.map((s) => (
+                        <div key={s.name}>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="text-gray-600">{s.name}</span>
+                            <span className="font-mono text-gray-500">{s.ms.toFixed(0)} ms</span>
+                          </div>
+                          <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full ${s.color} rounded-full transition-all duration-700`}
+                              style={{ width: `${Math.min((s.ms / total) * 100, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))
+                    })()}
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-4">
+                    <div className="p-4 rounded-lg bg-gray-50 text-center">
+                      <p className="text-xl font-bold">{(perfData.avg_latency_ms / 1000).toFixed(2)}s</p>
+                      <p className="text-xs text-gray-500">Avg</p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-gray-50 text-center">
+                      <p className="text-xl font-bold">{(perfData.percentiles.p50 / 1000).toFixed(2)}s</p>
+                      <p className="text-xs text-gray-500">P50</p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-blue-50 text-center">
+                      <p className="text-xl font-bold text-blue-600">{(perfData.percentiles.p95 / 1000).toFixed(2)}s</p>
+                      <p className="text-xs text-gray-500">P95</p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-gray-50 text-center">
+                      <p className="text-xl font-bold">{(perfData.percentiles.p99 / 1000).toFixed(2)}s</p>
+                      <p className="text-xs text-gray-500">P99</p>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -467,48 +544,67 @@ function App() {
         {currentPage === 'cost' && (
           <div className="max-w-3xl mx-auto">
             <div className="bg-white rounded-lg p-6 shadow shadow-gray-200">
-              <h2 className="text-2xl font-bold mb-6">Cost Analytics</h2>
-
-              <div className="grid grid-cols-2 gap-6 mb-8">
-                <div>
-                  <p className="text-xl font-bold">1,284</p>
-                  <p className="text-sm text-gray-500">Queries</p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-green-600">$0.0018</p>
-                  <p className="text-sm text-gray-500">Avg Cost/Query</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-6 mb-8">
-                <div>
-                  <p className="text-2xl font-bold text-gray-200">$2.31</p>
-                  <p className="text-sm text-gray-400">Monthly equivalent</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-200">1.84M</p>
-                  <p className="text-sm text-gray-400">Tokens</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="p-4 rounded-lg bg-gray-100">
-                  <div className="h-32 bg-gray-200 rounded-lg"></div>
-                  <p className="text-xs text-gray-500 mt-2">Embeddings</p>
-                </div>
-                <div className="p-4 rounded-lg bg-gray-100">
-                  <div className="h-32 bg-gray-200 rounded-lg"></div>
-                  <p className="text-xs text-gray-500 mt-2">Reranking</p>
-                </div>
-                <div className="p-4 rounded-lg bg-gray-100">
-                  <div className="h-48 bg-gray-200 rounded-lg"></div>
-                  <p className="text-xs text-gray-500 mt-2">LLM</p>
-                </div>
-              </div>
-
-              <p className="text-sm text-gray-500 mt-6">
-                tokens/query: 45 · tokens/sec: 25 · GPU utilization: 45% · CPU utilization: 65% · RAM usage: 8GB
+              <h2 className="text-2xl font-bold mb-1">Cost Analytics</h2>
+              <p className="text-xs text-gray-400 mb-6">
+                Cloud-equivalent cost estimate for local inference (ref pricing: $0.15/M input, $0.60/M output tokens)
               </p>
+
+              {!costData || costData.total_queries === 0 ? (
+                <p className="text-gray-400 text-sm py-8 text-center">
+                  No queries recorded yet. Ask something in Chat, then come back.
+                </p>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-6 mb-8">
+                    <div className="p-6 rounded-lg bg-gray-50">
+                      <p className="text-3xl font-bold">{costData.total_queries.toLocaleString()}</p>
+                      <p className="text-sm text-gray-500 mt-2">Queries</p>
+                    </div>
+                    <div className="p-6 rounded-lg bg-gray-50">
+                      <p className="text-3xl font-bold text-green-600">
+                        ${costData.avg_cost_per_query.toFixed(4)}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-2">Avg Cost / Query</p>
+                    </div>
+                    <div className="p-6 rounded-lg bg-gray-50">
+                      <p className="text-3xl font-bold">${costData.monthly_equivalent.toFixed(2)}</p>
+                      <p className="text-sm text-gray-500 mt-2">Monthly equivalent*</p>
+                    </div>
+                    <div className="p-6 rounded-lg bg-gray-50">
+                      <p className="text-3xl font-bold">{(costData.total_tokens / 1000).toFixed(1)}k</p>
+                      <p className="text-sm text-gray-500 mt-2">Total tokens</p>
+                    </div>
+                  </div>
+
+                  <p className="font-medium mb-3">Cost Distribution</p>
+                  {(() => {
+                    const bd = costData.cost_breakdown
+                    const total = bd.llm + bd.embeddings + bd.reranking || 1
+                    const rows = [
+                      { name: 'LLM generation', value: bd.llm, color: 'bg-orange-500' },
+                      { name: 'Embeddings', value: bd.embeddings, color: 'bg-blue-500' },
+                      { name: 'Reranking', value: bd.reranking, color: 'bg-purple-500' },
+                    ]
+                    return rows.map((r) => (
+                      <div key={r.name} className="mb-3">
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="text-gray-600">{r.name}</span>
+                          <span className="font-mono text-gray-500">${r.value.toFixed(5)}</span>
+                        </div>
+                        <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full ${r.color} rounded-full transition-all duration-700`}
+                            style={{ width: `${Math.max((r.value / total) * 100, r.value > 0 ? 2 : 0)}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))
+                  })()}
+                  <p className="text-xs text-gray-400 mt-4">
+                    * Extrapolated from avg cost/query assuming ~38,500 queries/month.
+                  </p>
+                </>
+              )}
             </div>
           </div>
         )}

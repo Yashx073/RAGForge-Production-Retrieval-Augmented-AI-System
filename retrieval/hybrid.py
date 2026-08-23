@@ -25,11 +25,13 @@ class HybridRetriever:
         self.dense = DenseRetriever()
         self.bm25: BM25Retriever | None = None
         self.documents: list[dict[str, Any]] = []
+        self.chunk_metadata: list[dict[str, Any]] | None = None
 
     def build(self, chunks: list[str]) -> None:
         self.documents = build_documents_from_chunks(chunks)
         self.bm25 = BM25Retriever(self.documents)
         self.dense.build_index(self.documents)
+        self.chunk_metadata = None
 
     def build_from_data_path(
         self,
@@ -48,6 +50,7 @@ class HybridRetriever:
         )
         chunk_texts = [chunk["text"] for chunk in chunks]
         self.build(chunk_texts)
+        self.chunk_metadata = [chunk.get("metadata", {}) for chunk in chunks]
 
     def search(self, query: str, k: int = 5, candidate_k: int = 20) -> list[dict[str, Any]]:
         if self.bm25 is None:
@@ -80,13 +83,14 @@ class HybridRetriever:
                 + self.bm25_weight * score_parts["bm25"]
             )
             doc = id_to_doc.get(doc_id, {"id": doc_id, "text": ""})
-            merged.append(
-                {
-                    "id": doc_id,
-                    "score": float(hybrid_score),
-                    "text": doc.get("text", ""),
-                }
-            )
+            merged_doc = {
+                "id": doc_id,
+                "score": float(hybrid_score),
+                "text": doc.get("text", ""),
+            }
+            if self.chunk_metadata is not None and 0 <= doc_id < len(self.chunk_metadata):
+                merged_doc["metadata"] = self.chunk_metadata[doc_id]
+            merged.append(merged_doc)
 
         merged.sort(key=lambda item: item["score"], reverse=True)
         return merged[:k]
