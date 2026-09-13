@@ -28,5 +28,20 @@
     "cost_embedding": 0.0,
     "cost_rerank": 0.0008,
     "cost_total": 0.000987
+  },
+  {
+    "timestamp": "2026-09-03T00:34:34",
+    "query": "What is RAGForge?",
+    "latency_ms": 29546.53365100239,
+    "retrieval_ms": 10574.364821004565,
+    "generation_ms": 18972.168829997827,
+    "input_tokens": 369,
+    "output_tokens": 54,
+    "total_tokens": 423,
+    "num_sources": 5,
+    "cost_llm": 8.8e-05,
+    "cost_embedding": 0.0,
+    "cost_rerank": 0.0008,
+    "cost_total": 0.000888
   }
 ]

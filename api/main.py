@@ -29,16 +29,24 @@ def _iter_document_files():
                     yield f
 
 
+from contextlib import asynccontextmanager
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("LIFESPAN STARTUP", flush=True)
+    rag_service.initialize()
+    print("LIFESPAN STARTUP COMPLETE", flush=True)
+    yield
+    print("LIFESPAN SHUTDOWN", flush=True)
+
+
 app = FastAPI(
     title="Production RAG API",
     version="1.0.0",
-    description="Production-grade Retrieval Augmented Generation API with Ollama"
+    description="Production-grade Retrieval Augmented Generation API with Ollama",
+    lifespan=lifespan
 )
-
-
-@app.on_event("startup")
-async def startup_event():
-    rag_service.initialize()
 
 
 @app.get("/health")
